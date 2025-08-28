@@ -37,4 +37,6 @@ jobs:
             docker pull ${{ secrets.DOCKER_IMAGE }}
 
             # Run container
-            docker run -d --name test-app -p 80:80 ${{ secrets.DOCKER_IMAGE }}
+            # Run nginx (simple web server)
+            docker run -d --name test-app -p 80:80 nginx:latest
+
