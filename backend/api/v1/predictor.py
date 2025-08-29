@@ -1,6 +1,5 @@
-from backend.app.models.model_fetcher import classifier2
-import pickle
-from backend.app.models.input_model import Input
+from backend.app.utils.model_fetcher import classifier2 ## including model from fetched file 
+from backend.app.models.input_model import Input ## user input module
 from fastapi import APIRouter
 
 #creating router instance

@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-boto3
-pickle
-dotenv
-pydantic-settings
-scikit-learn
-numpy
-pandas
