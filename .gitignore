@@ -19,6 +19,3 @@ __pycache__/
 Thumbs.db
 
 .env
-
-.github/
-.workflows/
