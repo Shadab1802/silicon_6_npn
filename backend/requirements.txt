@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+boto3
+dotenv
+pydantic<2
+scikit-learn
+numpy
+pandas
+python-multipart
+streamlit
+requests
+plotly
