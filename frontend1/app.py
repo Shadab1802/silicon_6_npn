@@ -5,6 +5,7 @@ import numpy as np
 import os
 import plotly.express as px
 import requests   # For FAST API backend integration
+import json
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  
 
@@ -73,7 +74,17 @@ with tab1:
                              ["January","February","March","April","May","June","July","August","September","October","November","December"])
         day_of_week = st.selectbox("DAY OF WEEK", 
                                    ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])
-        airline = st.selectbox("AIRLINE", ["Delta", "United", "JetBlue", "American", "Southwest", "Other"])
+        # API Responce for dynamic airline select 
+        response = requests.get(f"{BACKEND_URL}/api/airlines")
+        data = response.json()
+        airlines_dict = json.loads(data["airlines"])
+
+        airline = st.selectbox(
+            "AIRLINE",
+            options=list(airlines_dict.keys()),
+            format_func=lambda x: airlines_dict[x]
+        )
+
         departure_time = st.time_input("DEPARTURE TIME")
         elapsed_time = st.number_input("ELAPSED TIME (min)", min_value=10, max_value=1000, value=90)
         air_time = st.number_input("AIR TIME (min)", min_value=10, max_value=1000, value=80)
@@ -134,7 +145,7 @@ with tab2:
         with st.spinner("Batch predictions in progress..."):
             try:
                 files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
-                response = requests.post(f"{BACKEND_URL}/api/airlines", files=files)
+                response = requests.post(f"{BACKEND_URL}/api/batch_predict", files=files)
 
                 if response.status_code == 200:
                     result = response.json()

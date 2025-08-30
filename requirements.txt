@@ -2,7 +2,7 @@ fastapi
 uvicorn
 boto3
 dotenv
-pydantic
+pydantic<2
 scikit-learn
 numpy
 pandas
