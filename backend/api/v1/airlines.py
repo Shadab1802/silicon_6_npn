@@ -35,7 +35,7 @@ async def batch_predict(file: UploadFile = File(...)):
     predictions=1
 
     # Add predictions back into DataFrame
-    df["delayed"] = predictions
+    df["Delayed"] = predictions
 
     # Return as JSON
     return df.to_dict(orient="records")

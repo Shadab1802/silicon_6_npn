@@ -9,3 +9,4 @@ pandas
 python-multipart
 streamlit
 requests
+plotly

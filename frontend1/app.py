@@ -2,8 +2,11 @@ import streamlit as st
 import pandas as pd
 import time
 import numpy as np
+import os
 import plotly.express as px
-import requests   # For REST API backend integration
+import requests   # For FAST API backend integration
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  
 
 st.set_page_config(
     page_title="Flight Delay Prediction",
@@ -53,7 +56,7 @@ with col_title:
 with st.sidebar:
     st.header("🖌️ Appearance & Settings")
     theme = st.radio("Theme:", options=["Light", "Dark"], index=0)
-    st.write("[Support](mailto:shekharsingh824101@gmail.com) | [Source Code](https://github.com/Shadab1802/flight_prediction_npn)")
+    st.write("[Support](mailto:shekharsingh824101@gmail.com)")
     st.divider()
     st.header("🛠️ Advanced Analysis")
     st.checkbox("Enable real-time weather API (simulated)")
@@ -95,9 +98,9 @@ with tab1:
                 "destination_state": destination_state
             }
             try:
-                response = requests.post("http://localhost:8000/predict", json=payload)  # Change URL to your backend
+                response = requests.post(f"{BACKEND_URL}/api/airlines", json=payload)  # Change URL to your backend
                 result = response.json()
-                prediction = result.get('prediction', 'Error')
+                prediction = result.get('Delay', 'Error')
                 confidence = result.get('confidence', 0)
             except Exception as e:
                 prediction = "Error"
@@ -130,26 +133,38 @@ with tab2:
         df_batch = pd.read_csv(uploaded_file)
         with st.spinner("Batch predictions in progress..."):
             try:
-                flights = df_batch.to_dict("records")
-                response = requests.post("http://localhost:8000/batch_predict", json={"flights": flights})  # Update URL
-                batch_results = response.json()
-                df_batch["Prediction"] = [r["prediction"] for r in batch_results]
-                df_batch["Confidence"] = [r["confidence"] for r in batch_results]
+                files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
+                response = requests.post(f"{BACKEND_URL}/api/airlines", files=files)
+
+                if response.status_code == 200:
+                    result = response.json()
+
+                    # Show as table
+                    st.success("All batch predictions complete! Results below ⬇️")
+                    df_batch = pd.DataFrame(result)
+                    st.dataframe(df_batch)
+
+                    # st.subheader("Flight Delay Overview")
+                    # fig = px.pie(df_batch, names='Prediction', title='Delay Breakdown', color='Prediction',
+                    #             color_discrete_map={"🟢 On Time":"mediumspringgreen","🔴 Delay Possible":"tomato"})
+                    # st.plotly_chart(fig, use_container_width=True)
+                    # st.snow()
+
+                    # st.subheader("Confidence Score Distribution")
+                    # fig2 = px.histogram(df_batch, x="Confidence", color="Prediction", nbins=10)
+                    # st.plotly_chart(fig2, use_container_width=True)
+
+                    csv = df_batch.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label="Download predictions as CSV",
+                        data=csv,
+                        file_name="predictions.csv",
+                        mime="text/csv"
+                    )
+                else:
+                    st.error(f"Error: {response.text}")
             except Exception as e:
-                df_batch["Prediction"] = ["Error"] * len(df_batch)
-                df_batch["Confidence"] = [0] * len(df_batch)
-        st.success("All batch predictions complete! Results below ⬇️")
-        st.dataframe(df_batch)
-        st.subheader("Flight Delay Overview")
-        fig = px.pie(df_batch, names='Prediction', title='Delay Breakdown', color='Prediction',
-                     color_discrete_map={"🟢 On Time":"mediumspringgreen","🔴 Delay Possible":"tomato"})
-        st.plotly_chart(fig, use_container_width=True)
-        st.snow()
-
-        st.subheader("Confidence Score Distribution")
-        fig2 = px.histogram(df_batch, x="Confidence", color="Prediction", nbins=10)
-        st.plotly_chart(fig2, use_container_width=True)
-
+                st.error(f"Request failed: {e}")
 # ---- Footer ----
 st.markdown("---")
 colA, colB = st.columns([5,6])
