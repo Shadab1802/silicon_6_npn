@@ -66,8 +66,9 @@ jobs:
             sleep 2
           done
           echo "Backend did not start in time"
-          docker logs $(docker ps -q --filter "ancestor=backend:test")
+          docker-compose -f docker-compose.test.yml logs backend
           exit 1
+
         #watinf for front end to bootup
       - name: Wait for frontend to be ready
         run: |
@@ -80,7 +81,7 @@ jobs:
             sleep 2
           done
           echo "Frontend did not start in time"
-          docker logs $(docker ps -q --filter "ancestor=frontend:test")
+          docker-compose -f docker-compose.test.yml logs frontend
           exit 1
 
       # Push images only if tests pass
