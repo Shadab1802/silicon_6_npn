@@ -1,8 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
 import pandas as pd
 import io
+from fastapi import APIRouter, UploadFile, File, HTTPException
 # from backend.app.utils.model_fetcher import classifier2
-from backend.app.models.input_model import Input  # your Pydantic input model
+from app.models.input_model import Input  # your Pydantic input model
 
 router = APIRouter()
 
@@ -17,7 +17,8 @@ async def batch_predict(file: UploadFile = File(...)):
     df = pd.read_csv(io.BytesIO(contents))
 
     # ✅ Automatically get feature names from Input model
-    feature_columns = list(Input.model_fields.keys())
+    # feature_columns = list(Input.model_fields.keys())
+    feature_columns = list(Input.__fields__.keys())
 
     # Validate required columns exist in uploaded CSV
     missing_cols = [col for col in feature_columns if col not in df.columns]

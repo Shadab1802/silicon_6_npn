@@ -1,6 +1,6 @@
 # app/core/s3.py
 import boto3
-from backend.app.core.config import settings
+from app.core.config import settings
 
 def get_s3_resource():
     return boto3.resource(

@@ -1,4 +1,4 @@
-from backend.app.core.s3 import get_s3_resource
+from app.core.s3 import get_s3_resource
 import pickle
 class DataRetriever:
     def __init__(self, bucket: str):

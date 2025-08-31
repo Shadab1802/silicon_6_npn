@@ -1,4 +1,4 @@
-from backend.app.core.config import settings
+from app.core.config import settings
 import boto3, pickle
 
 s3 = boto3.resource(

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from backend.api.v1 import batch_predict, home,users,airlines
+from api.v1 import batch_predict, home,users,airlines
 
 app = FastAPI()
 

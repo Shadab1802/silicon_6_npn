@@ -1,7 +1,8 @@
-from fastapi import APIRouter
 import os
-from backend.app.services.data_retriever import DataRetriever
+from fastapi import APIRouter
+from app.services.data_retriever import DataRetriever
 from dotenv import load_dotenv
+
 load_dotenv()
 router = APIRouter()
 
