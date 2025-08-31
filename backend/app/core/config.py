@@ -1,10 +1,10 @@
-# backend/app/core/config.py
 from pydantic import BaseSettings
+from typing import Optional
 
 class Settings(BaseSettings):
-    aws_access_key: str
-    aws_secret_access_key: str
-    aws_region: str
+    aws_access_key: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_region: Optional[str] = None
 
     class Config:
         env_file = ".env"
