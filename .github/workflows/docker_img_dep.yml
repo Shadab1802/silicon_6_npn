@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - main
-      
+
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
@@ -44,14 +44,14 @@ jobs:
             backend:
               image: backend:test
               ports:
-                - "5000:5000"
+                - "5000:8000"   # map host 5000 -> container 8000
             frontend:
               image: frontend:test
               ports:
                 - "8501:80"
           EOL
           docker-compose -f docker-compose.test.yml up -d
-          sleep 10   # give services time to start
+          sleep 10
           docker ps
 
       # Simple health check
