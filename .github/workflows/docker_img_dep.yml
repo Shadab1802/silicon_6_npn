@@ -43,12 +43,14 @@ jobs:
           services:
             backend:
               image: backend:test
-              ports:
-                - "5000:8000"   # map host 5000 -> container 8000
+              expose:
+                - "5000"   # internal only
             frontend:
               image: frontend:test
               ports:
                 - "8501:80"
+              environment:
+                - BACKEND_URL=http://backend:5000
           EOL
           docker-compose -f docker-compose.test.yml up -d
           sleep 10

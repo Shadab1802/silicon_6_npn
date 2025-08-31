@@ -8,10 +8,11 @@ on:
   workflow_run:
     workflows: ["Docker CI/CD"]
     types:
-      -completed
+      - completed
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +26,5 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/app   # adjust to your deploy path
+            cd /home/ubuntu/app
             ./deploy.sh
