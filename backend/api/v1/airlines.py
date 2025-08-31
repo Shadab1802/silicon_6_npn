@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 router = APIRouter()
 
-retriever = DataRetriever(bucket=os.getenv("BUCKET_NAME"))
+retriever = DataRetriever(bucket=os.getenv("BUCKET_NAME","silicon6npn"))
 
 @router.get("/airlines")
 def airlines():
