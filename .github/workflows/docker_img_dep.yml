@@ -54,12 +54,34 @@ jobs:
           sleep 10
           docker ps
 
-      # Simple health check
-      - name: Test backend health
-        run: curl --fail http://localhost:5000 || (echo "Backend failed" && exit 1)
-
-      - name: Test frontend health
-        run: curl --fail http://localhost:8501 || (echo "Frontend failed" && exit 1)
+        # Wait for backend to be ready (retry loop)
+      - name: Wait for backend to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:5000 > /dev/null; then
+              echo "Backend is up!"
+              exit 0
+            fi
+            echo "Waiting for backend..."
+            sleep 2
+          done
+          echo "Backend did not start in time"
+          docker logs $(docker ps -q --filter "ancestor=backend:test")
+          exit 1
+        #watinf for front end to bootup
+      - name: Wait for frontend to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8501 > /dev/null; then
+              echo "Frontend is up!"
+              exit 0
+            fi
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+          echo "Frontend did not start in time"
+          docker logs $(docker ps -q --filter "ancestor=frontend:test")
+          exit 1
 
       # Push images only if tests pass
       - name: Log in to Docker Hub
