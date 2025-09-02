@@ -2,9 +2,11 @@ from app.core.s3 import get_s3_client
 import os
 from app.core.config import settings
 
+MODEL_DIR = "/app/models"
+
 FILES = {
-    "model": ("flight_model.pkl", "app/models/model.pkl"),
-    "encoder": ("encoders.pkl", "app/models/encoder.pkl")
+    "model": ("flight_model.pkl", os.path.join(MODEL_DIR, "model.pkl")),
+    "encoder": ("encoders.pkl", os.path.join(MODEL_DIR, "encoder.pkl")),
 }
 
 def download_models():
