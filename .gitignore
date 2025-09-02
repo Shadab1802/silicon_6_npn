@@ -19,3 +19,6 @@ __pycache__/
 Thumbs.db
 
 .env
+
+# Ignore all model files in backend/app/models
+backend/app/models/*.pkl*
