@@ -1,13 +1,17 @@
 import streamlit as st
 import pandas as pd
-import time
+from datetime import date, datetime
 import numpy as np
 import os
 import plotly.express as px
 import requests   # For FAST API backend integration
 import json
+from input_model import Input
+from backendReq.fetch_flights import fetch_alternative_flights
+from backendReq.fetch_prediction import fetch_prediction
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 st.set_page_config(
     page_title="Flight Delay Prediction",
@@ -48,7 +52,7 @@ st.markdown("""
 
 col_logo, col_title = st.columns([1,6])
 with col_logo:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/e/e3/Airplane_icon.png", width=80)
+    st.image("airplane.png", width=80)
 with col_title:
     st.markdown("<span class='header'>🚦 Flight Delay Prediction Center</span>", unsafe_allow_html=True)
     st.caption("Real-time, AI-driven flight delay analytics. Upload flights, get predictions, and visualize results all in one platform.")
@@ -70,14 +74,13 @@ tab1, tab2 = st.tabs(["🔍User", "📂 Airlies (CSV)"])
 with tab1:
     st.subheader("Predict Delay for a Single Flight")
     with st.form("flight_form"):
-        month = st.selectbox("MONTH", 
-                             ["January","February","March","April","May","June","July","August","September","October","November","December"])
-        day_of_week = st.selectbox("DAY OF WEEK", 
-                                   ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])
+        flight_date = st.date_input("FLIGHT DATE",min_value=date.today())      
+        
         # API Responce for dynamic airline select 
-        response = requests.get(f"{BACKEND_URL}/api/airlines")
-        data = response.json()
-        airlines_dict = json.loads(data["airlines"])
+        # response = requests.get(f"{BACKEND_URL}/api/airlines")
+        json_path = os.path.join(BASE_DIR, "airlines.json")
+        with open(json_path, "r") as f:
+            airlines_dict = json.load(f)
 
         airline = st.selectbox(
             "AIRLINE",
@@ -85,56 +88,77 @@ with tab1:
             format_func=lambda x: airlines_dict[x]
         )
 
-        departure_time = st.time_input("DEPARTURE TIME")
-        elapsed_time = st.number_input("ELAPSED TIME (min)", min_value=10, max_value=1000, value=90)
-        air_time = st.number_input("AIR TIME (min)", min_value=10, max_value=1000, value=80)
-        arrival_time = st.time_input("ARRIVAL TIME")
-        origin_state = st.selectbox("ORIGIN STATE", ["CA", "NY", "TX", "FL", "IL", "Other"])
-        destination_state = st.selectbox("DESTINATION STATE", ["CA", "NY", "TX", "FL", "IL", "Other"])
+         #API responce for dynamic state select
+        # response = requests.get(f'{BACKEND_URL}/api/states')\
+        json_path = os.path.join(BASE_DIR, "states.json")
+        with open(json_path, "r") as f:
+            states_dict = json.load(f)
+        
+        origin_state = st.selectbox(
+            "ORIGIN STATE",
+            options=list(states_dict.keys()),
+            format_func=lambda x: states_dict[x]
+        )
+
+        destination_state = st.selectbox(
+            "DESTINATION STATE",
+            options=[s for s in states_dict.keys() if s != origin_state],
+            format_func=lambda x: states_dict[x]
+        )
+
+        departure_time = st.time_input("DEPARTURE TIME",value=datetime.now())
+        arrival_time = st.time_input("ARRIVAL TIME",value=datetime.now())
+
+        json_path = os.path.join(BASE_DIR, "avg_dept_delay.json")
+        with open(json_path, "r") as f:
+            avg_dept_delay = json.load(f)
+
+        departure_delay = st.number_input("DEPARTURE_DELAY (min)", min_value=0.0, max_value=1000.0, value=float(avg_dept_delay[airline]))
+       
         tooltip = "Integrates historical and real-time data for best results."
         submit_btn = st.form_submit_button("🚀 Predict Delay", help=tooltip)
 
     if submit_btn:
         with st.spinner("⏳ Running advanced AI prediction..."):
-            # ----- Replace with your backend prediction endpoint -----
-            payload = {
-                "month": month,
-                "day_of_week": day_of_week,
-                "airline": airline,
-                "departure_time": str(departure_time),
-                "elapsed_time": elapsed_time,
-                "air_time": air_time,
-                "arrival_time": str(arrival_time),
-                "origin_state": origin_state,
-                "destination_state": destination_state
-            }
+            
+            input_data = Input(
+                DATE=flight_date,
+                AIRLINE=airline,
+                DEPARTURE_TIME=departure_time,
+                ARRIVAL_TIME=arrival_time,
+                ORIGIN_STATE=origin_state,
+                DESTINATION_STATE=destination_state,
+                DEPARTURE_DELAY=float(departure_delay)
+            )
+
+            payload = input_data.dict()
+
+            """Send request to backend and return prediction result safely."""
             try:
-                response = requests.post(f"{BACKEND_URL}/api/airlines", json=payload)  # Change URL to your backend
-                result = response.json()
-                prediction = result.get('Delay', 'Error')
-                confidence = result.get('confidence', 0)
-            except Exception as e:
-                prediction = "Error"
-                confidence = 0
-        st.success(f"Prediction for {airline}: {prediction}")
-        st.metric("Confidence Level", f"{confidence}%", 
-                  delta=f"{confidence-70 if prediction=='🟢 On Time' else confidence-60}%")
-        st.balloons()
-        summary_df = pd.DataFrame({
-            "MONTH": [month],
-            "DAY_OF_WEEK": [day_of_week],
-            "AIRLINE": [airline],
-            "DEPARTURE_TIME": [departure_time],
-            "ELAPSED_TIME": [elapsed_time],
-            "AIR_TIME": [air_time],
-            "ARRIVAL_TIME": [arrival_time],
-            "ORIGIN_STATE": [origin_state],
-            "DESTINATION_STATE": [destination_state],
-            "Prediction": [prediction],
-            "Confidence": [f"{confidence}%"]
-        })
-        st.write("Prediction Details:")
-        st.dataframe(summary_df)
+
+                prediction, full_result = None,None
+
+                if prediction is None:
+                    st.warning("Could not get prediction from server.")
+                elif prediction == 0:
+                    st.success("✅ Your flight is on time!")
+                else:
+                    st.error("⚠️ Your flight may be delayed.")
+
+                    # Fetch alternative flights
+                    with st.spinner("Fetching alternative flights..."):
+                        alternatives = fetch_alternative_flights(payload)
+
+                    if alternatives:
+                        df = pd.DataFrame(alternatives)
+                        st.subheader("Available Alternative Flights")
+                        st.table(df)
+                    else:
+                        st.info("No alternative flights found at the moment.")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Request failed: {e}")
+
+
 
 with tab2:
     st.subheader("Predict Delays for Multiple Flights (Upload CSV)")

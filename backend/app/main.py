@@ -1,14 +1,16 @@
 from fastapi import FastAPI
 import uvicorn
-from api.v1 import batch_predict, home,users,airlines
+from api.v1 import alternatives,batch_predict,predictor
 
 app = FastAPI()
 
 #Includes Routers
-app.include_router(home.router,prefix="/api",tags=["info"])
-app.include_router(users.router,prefix="/api",tags=["predicting from model"])
+
 app.include_router(batch_predict.router,prefix="/api",tags=["predicting from model"])
-app.include_router(airlines.router,prefix="/api",tags=["Fetching data"])
+# app.include_router(alternatives.router,prefix="/api",tags=["Alternatives flight if delayed"])
+app.include_router(predictor.router,prefix="/api",tags="take one input and predict delayed or not")
+
+
 @app.get("/")
 def root():
     return {"message": "Welcome to API"}

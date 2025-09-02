@@ -1,8 +1,10 @@
+from fastapi import APIRouter, UploadFile, File, HTTPException
 import pandas as pd
 import io
-from fastapi import APIRouter, UploadFile, File, HTTPException
-# from backend.app.utils.model_fetcher import classifier2
-from app.models.input_model import Input  # your Pydantic input model
+from sklearn.preprocessing import RobustScaler, StandardScaler
+from app.schemas.input_model import Input 
+from app.utils import sub_encoder
+from app.utils.model_loader import model,encoders
 
 router = APIRouter()
 
@@ -16,11 +18,10 @@ async def batch_predict(file: UploadFile = File(...)):
     contents = await file.read()
     df = pd.read_csv(io.BytesIO(contents))
 
-    # ✅ Automatically get feature names from Input model
-    # feature_columns = list(Input.model_fields.keys())
+    # Get feature names from Input model
     feature_columns = list(Input.__fields__.keys())
 
-    # Validate required columns exist in uploaded CSV
+    # Validate required columns exist
     missing_cols = [col for col in feature_columns if col not in df.columns]
     if missing_cols:
         raise HTTPException(
@@ -28,14 +29,30 @@ async def batch_predict(file: UploadFile = File(...)):
             detail=f"Missing required columns: {missing_cols}"
         )
 
-    # Select features for prediction
-    features = df[feature_columns]
+    # Convert entire CSV to model_input format
+    model_input_list = [sub_encoder(row).dict() for _, row in df[feature_columns].iterrows()]
+    processed_df = pd.DataFrame(model_input_list)
+
+    # Apply encoders
+    for col, le in encoders.items():
+        if col in processed_df.columns:
+            processed_df[col] = le.transform(processed_df[col])
+
+    # Apply scalers
+    robust_cols = ['DEPARTURE_TIME', 'DEPARTURE_DELAY']
+    standard_cols = ['MONTH', 'DAY_OF_WEEK', 'ARRIVAL_TIME']
+    robust_scaler = RobustScaler()
+    standard_scaler = StandardScaler()
+
+    if robust_cols:
+        processed_df[robust_cols] = robust_scaler.fit_transform(processed_df[robust_cols])
+    if standard_cols:
+        processed_df[standard_cols] = standard_scaler.fit_transform(processed_df[standard_cols])
 
     # Run predictions
-    # predictions = classifier2.predict(features)
-    predictions=1
+    predictions = model.predict(processed_df)
 
-    # Add predictions back into DataFrame
+    # Add predictions to original DataFrame
     df["Delayed"] = predictions
 
     # Return as JSON
