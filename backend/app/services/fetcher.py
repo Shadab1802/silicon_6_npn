@@ -1,3 +1,13 @@
+# backend/app/services/fetcher.py
+
+"""
+    As for prototyping our plan was to deploy on EC2. Our intial plan was to store model at S3 and when the backend goes live it download the model.pkl
+    and encoder.pkl and store them on local disk of EC2
+    model get store in models/ folder of backend.
+    model wasn't save backend at first as size will huge nor in docker_hub as image as their also size will be huge
+    
+"""
+
 from app.core.s3 import get_s3_client
 import os
 from app.core.config import settings

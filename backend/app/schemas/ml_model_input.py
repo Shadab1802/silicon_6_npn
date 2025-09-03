@@ -1,3 +1,12 @@
+# backend/app/schemas/model_input.py
+
+"""
+This is the input schema for models.
+Even our encoder need input in perticular format in which historical data was present, for example: instead of DATE, DAY_OF_WEEK coloum was present
+so when ever we need to pass input to the model it shouldbe in this format only. It mantain consistency across whole code
+
+"""
+
 from pydantic import BaseModel,Field
 
 class Input(BaseModel):

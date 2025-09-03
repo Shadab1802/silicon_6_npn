@@ -1,3 +1,8 @@
+# backend/app/core/config.py
+"""
+configure s3 bucket 
+
+"""
 from pydantic import BaseSettings, Field
 from typing import Optional
 

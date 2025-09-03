@@ -1,3 +1,17 @@
+# backend/api/v1/batch_predict.py
+"""
+This api route is for batch predictions. Main user is airlines
+
+It accepts input as csv from user, it can be in user_input schema
+sub_endcoder converts the user_input schema to machine_input schema that futher get encoded via model self encoder
+user get output as json file , which in front end converts to csv table that airlines can download
+
+future aspect we thought to push this output to s3 bucket or sagemaker for future trannig, and we can schedule a api call from backend to Aviationstack
+to fetch the actual result, was delay actually present and if error get persistent then devloper team get notification.
+
+"""
+
+
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import pandas as pd
 import io
