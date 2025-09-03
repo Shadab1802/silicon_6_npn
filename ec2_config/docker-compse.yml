@@ -1,0 +1,20 @@
+  GNU nano 7.2                 docker-compose.yml                           
+version: '3'
+services:
+  backend:
+    image: shad1811/backend:${BACKEND_TAG}
+    ports:
+      - "5000:5000" #host access
+    volumes:
+      - ~/models:/app/models
+    expose:
+      - "5000"   # <-- exposes only to Docker network
+    env_file:
+      - .env
+
+  frontend:
+    image: shad1811/frontend:${FRONTEND_TAG}
+    ports:
+      - "80:80"   # <-- only frontend is public
+    environment:
+      - BACKEND_URL=http://backend:5000
