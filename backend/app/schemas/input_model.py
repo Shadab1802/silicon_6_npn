@@ -1,3 +1,12 @@
+# backend/app/schemas/input_model.py
+"""
+Here we defined the user_inpu schema,
+theses are the basic fixed format we want as input from user , weather a airline or api call or indivudual user
+needed to maintain a fixed structure for all user input through out code
+
+"""
+
+
 from pydantic import BaseModel,Field
 
 class Input(BaseModel):

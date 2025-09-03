@@ -1,3 +1,12 @@
+# backend/app/tuils/sub_encoder.py
+
+"""
+    This is util funtion to basically convert user_input to model_input schema. As Machine input format is not convient to take as input 
+    as we are also providing API features , we can't as user to input in modle format as in training model were trained for better acuracy etc.
+    Their even time is in minute and our model don't even take date as input but 
+
+"""
+
 from app.schemas import input_model,ml_model_input
 from datetime import datetime
 def sub_encoder(user_input:input_model) -> ml_model_input:

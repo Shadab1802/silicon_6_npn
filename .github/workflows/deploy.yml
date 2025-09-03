@@ -1,7 +1,9 @@
 # idea hear is 2 files will be created on ec2 at time of creating Instance on AWS namely "docker-compose.yml" and "deploy.sh"
 # at time of new version deployment via git, git Actions just run the second file i.e "deploy.sh" and docker container gors live
-# tihs facalitate roll back if new verion get failed or creashed... 
+# this facalitate roll back if new verion get failed or creashed... 
 # roll back will be from administrator terminal after cinnection to ec2 via ssh
+
+#acess key like EC2 HOST is set in git secrets
 name: Deploy Frontend & Backend to EC2
 
 on:

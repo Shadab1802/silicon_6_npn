@@ -1,3 +1,14 @@
+# backend/api/v1/predictor.py
+
+"""
+This api route is for single prediction
+same accepts user_input model as input
+apply sub_encoder to convert it to model_input schema
+then that is passed via model encoder to model
+output is json in {"Delayed":0/1} 0- not delayed 1- delayed
+
+"""
+
 from app.utils.model_loader import model,encoders## including model from fetched file 
 from app.schemas.input_model import Input ## user input module
 from fastapi import APIRouter

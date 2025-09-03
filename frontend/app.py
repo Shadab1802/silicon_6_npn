@@ -10,8 +10,9 @@ from input_model import Input
 from backendReq.fetch_flights import fetch_alternative_flights
 from backendReq.fetch_prediction import fetch_prediction
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  # This BACKEND_URL if found in EC2 instance .env file then it will send request to that file only
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # we do store some of files in frontend, to make user expeience smooth and understanding
+# like states name is shown instead of code - much user convenient
 
 st.set_page_config(
     page_title="Flight Delay Prediction",
@@ -71,10 +72,12 @@ with st.sidebar:
 # ---- Tabs for Single and Batch Predictions ----
 tab1, tab2 = st.tabs(["🔍User", "📂 Airlies (CSV)"])
 
+#  for single user .i.e. use have to give inputs to fields
+ 
 with tab1:
     st.subheader("Predict Delay for a Single Flight")
     with st.form("flight_form"):
-        flight_date = st.date_input("FLIGHT DATE",min_value=date.today())      
+        flight_date = st.date_input("FLIGHT DATE",min_value=date.today())    # for individual user only future dates enter is allowded  
         
         # API Responce for dynamic airline select 
         # response = requests.get(f"{BACKEND_URL}/api/airlines")
@@ -82,6 +85,7 @@ with tab1:
         with open(json_path, "r") as f:
             airlines_dict = json.load(f)
 
+        # user see airlines name but input field get code as input
         airline = st.selectbox(
             "AIRLINE",
             options=list(airlines_dict.keys()),
@@ -106,13 +110,14 @@ with tab1:
             format_func=lambda x: states_dict[x]
         )
 
-        departure_time = st.time_input("DEPARTURE TIME",value=datetime.now())
+        departure_time = st.time_input("DEPARTURE TIME",value=datetime.now()) 
         arrival_time = st.time_input("ARRIVAL TIME",value=datetime.now())
 
         json_path = os.path.join(BASE_DIR, "avg_dept_delay.json")
         with open(json_path, "r") as f:
             avg_dept_delay = json.load(f)
 
+        # if normal user don't know what's the departure delay of any airline fron frontend the we just feed the avg dept_delay of tha airline to thid field
         departure_delay = st.number_input("DEPARTURE_DELAY (min)", min_value=0.0, max_value=1000.0, value=float(avg_dept_delay[airline]))
        
         tooltip = "Integrates historical and real-time data for best results."

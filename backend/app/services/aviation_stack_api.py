@@ -1,3 +1,12 @@
+# backend/app/services/aviation_stack_api.py
+
+"""
+This block initialize the Aviation Stack API and give access anywhere in program to fetch flight data with any parameter 
+like if in part of code we just want to fetch flight on date 2025-09-03 from a airport, then just pass that only to get_flight()
+funtion and the flights will be returned.
+
+"""
+
 import requests
 from dotenv import load_dotenv
 import os

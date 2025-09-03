@@ -1,3 +1,19 @@
+#backend/api/v1/aternatives.py
+
+"""
+This route is for responding alternatives for a predicted delay flight.
+
+Uses ExternalAPI(Aviation stack) to fetch scheduled flights from origin state (any airport) to destination state(any airport)
+
+as on free tier of api no parameter passing is allowed. so some processing is made here.(sorted in ascending order of arrival time) 
+
+as user input is in perticular format to maintain uniformality across whole api calling process, some preprocessing is required before calling external api
+
+here we mapped the states to their coresponding airport from states_airport.json and then call api for one-to-one mapping of airport corresponding to each state 
+
+output is : {"total_flights": len(all_flights), "flights": all_flights}
+
+"""
 from app.schemas.input_model import Input ## user input module
 from fastapi import APIRouter
 from app.services.aviation_stack_api import AviationStackAPI
@@ -6,6 +22,7 @@ import json
 #creating router instance
 router = APIRouter()
 avi_api = AviationStackAPI()
+
 
 with open("states_airport.json") as f:
     states_airport = json.load(f)
