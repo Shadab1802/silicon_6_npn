@@ -1,7 +1,4 @@
-from app.services.fetcher import download_models
 import joblib
 
-paths = download_models()
-
-model=joblib.load(paths["model"])
-encoders = joblib.load(paths["encoder"])
+model = joblib.load("app/models/model.pkl")
+encoders = joblib.load("app/models/encoder.pkl")
